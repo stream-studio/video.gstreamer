@@ -1,7 +1,7 @@
 
-FROM debian:buster
+FROM debian:bookworm
 
-ENV GSTREAMER_VERSION=1.18.4
+ENV GSTREAMER_VERSION=1.22.4
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     autoconf `# libnice` \
@@ -40,9 +40,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     ninja-build \
     gobject-introspection \
     libgirepository1.0-dev \
-    && pip3 install PyGObject \
-    && pip3 install meson \
-    && update-alternatives --install /usr/bin/python python /usr/bin/python3.7 2 \
+    && rm -rf /var/lib/apt/lists/* \
+    && pip3 install --break-system-packages PyGObject \
+    && pip3 install --break-system-packages meson \
     && wget https://gstreamer.freedesktop.org/src/gstreamer/gstreamer-${GSTREAMER_VERSION}.tar.xz \
     && tar xvfJ gstreamer-${GSTREAMER_VERSION}.tar.xz > /dev/null \
     && cd gstreamer-${GSTREAMER_VERSION} \
