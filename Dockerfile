@@ -1,8 +1,8 @@
 
 FROM debian:bookworm-slim as builder
 
-ENV GSTREAMER_VERSION=1.24.10
 
+ENV GSTREAMER_VERSION=1.24.10
 RUN apt-get update && apt-get install -y --no-install-recommends \
     autoconf `# libnice` \
     automake `# libnice` \
@@ -23,6 +23,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libtool `# libnice` \
     libvpx-dev \
     libx264-dev \
+    libx265-dev \
     mount \
     perl \
     python3 \
@@ -37,11 +38,19 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     python3-wheel \ 
     libcairo2-dev \
     ninja-build \
+    libsoup-3.0-dev \
     gobject-introspection \
     libgirepository1.0-dev \
     && rm -rf /var/lib/apt/lists/* \
     && pip3 install --break-system-packages PyGObject \
     && pip3 install --break-system-packages meson \
+    && wget https://gstreamer.freedesktop.org/src/orc/orc-0.4.40.tar.xz \
+    && tar xvfJ orc-0.4.40.tar.xz > /dev/null \
+    && cd orc-0.4.40 \
+    && meson build --prefix=/usr/ \
+    && ninja -C build \
+    && ninja -C build install \
+    && cd / \
     && wget https://gstreamer.freedesktop.org/src/gstreamer/gstreamer-${GSTREAMER_VERSION}.tar.xz \
     && tar xvfJ gstreamer-${GSTREAMER_VERSION}.tar.xz > /dev/null \
     && cd gstreamer-${GSTREAMER_VERSION} \
@@ -77,7 +86,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && wget https://gstreamer.freedesktop.org/src/gst-plugins-bad/gst-plugins-bad-${GSTREAMER_VERSION}.tar.xz \
     && tar xvfJ gst-plugins-bad-${GSTREAMER_VERSION}.tar.xz > /dev/null \
     && cd gst-plugins-bad-${GSTREAMER_VERSION} \
-    && meson build --prefix=/usr/ \
+    && meson build -Dgpl=enabled --prefix=/usr/ \
     && ninja -C build \
     && ninja -C build install \
     && cd / \
@@ -85,7 +94,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && wget https://gstreamer.freedesktop.org/src/gst-plugins-ugly/gst-plugins-ugly-${GSTREAMER_VERSION}.tar.xz \
     && tar xvfJ gst-plugins-ugly-${GSTREAMER_VERSION}.tar.xz > /dev/null \
     && cd gst-plugins-ugly-${GSTREAMER_VERSION} \
-    && meson build --prefix=/usr/ \
+    && meson build -Dgpl=enabled --prefix=/usr/ \
     && ninja -C build \
     && ninja -C build install \
     && cd / \
@@ -104,15 +113,22 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && ninja -C build \
     && ninja -C build install \
     && cd / \
+    && git clone https://github.com/stream-studio/gst-plugins-studio \
+    && cd gst-plugins-studio \
+    && meson build --prefix=/usr/ \
+    && ninja -C build \
+    && ninja -C build install \
+    && cd / \    
     && rm -rf gst* \
     && rm -rf /var/lib/apt/lists/*
-    
+
 
 FROM debian:bookworm-slim as runtime
 
 ENV GSTREAMER_VERSION=1.24.10
 
 COPY --from=builder /usr/bin/gst* /usr/bin/
+COPY --from=builder /usr/lib/aarch64-linux-gnu/liborc-0.4.so /usr/lib/aarch64-linux-gnu/
 COPY --from=builder /usr/lib/aarch64-linux-gnu/libgst* /usr/lib/aarch64-linux-gnu/
 COPY --from=builder /usr/lib/aarch64-linux-gnu/libnice.so /usr/lib/aarch64-linux-gnu/
 COPY --from=builder /usr/lib/aarch64-linux-gnu/gstreamer-1.0 /usr/lib/aarch64-linux-gnu/gstreamer-1.0
@@ -125,6 +141,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libvpx7 \
     libopus0 \
     libx264-164 \
+    libx265-199 \
     libpng16-16 \
     libx11-6 \
     libcairo2 \
@@ -135,6 +152,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libsrtp2-1 \
     libcairo-gobject2 \
     libgirepository-1.0-1 \
+    libsoup-3.0 \
     && rm -rf /var/lib/apt/lists/*
 
 # Définir le point d'entrée
