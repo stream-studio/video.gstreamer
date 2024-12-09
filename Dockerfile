@@ -1,7 +1,7 @@
 
-FROM debian:bookworm
+FROM debian:bookworm-slim as builder
 
-ENV GSTREAMER_VERSION=1.22.4
+ENV GSTREAMER_VERSION=1.24.10
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     autoconf `# libnice` \
@@ -16,7 +16,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     gtk-doc-tools `# libnice` \
     libffi-dev \
     libglib2.0 \
-    libnice-dev \
     libopus-dev \
     libpcre3-dev \
     libsrtp2-dev \
@@ -65,6 +64,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && ninja -C build \
     && ninja -C build install \
     && cd / \
+    && rm -rf libnice \
 # gst-plugins-good
     && wget https://gstreamer.freedesktop.org/src/gst-plugins-good/gst-plugins-good-${GSTREAMER_VERSION}.tar.xz \
     && tar xvfJ gst-plugins-good-${GSTREAMER_VERSION}.tar.xz > /dev/null \
@@ -104,4 +104,38 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && ninja -C build \
     && ninja -C build install \
     && cd / \
-    && rm -rf gst*    
+    && rm -rf gst* \
+    && rm -rf /var/lib/apt/lists/*
+    
+
+FROM debian:bookworm-slim as runtime
+
+ENV GSTREAMER_VERSION=1.24.10
+
+COPY --from=builder /usr/bin/gst* /usr/bin/
+COPY --from=builder /usr/lib/aarch64-linux-gnu/libgst* /usr/lib/aarch64-linux-gnu/
+COPY --from=builder /usr/lib/aarch64-linux-gnu/libnice.so /usr/lib/aarch64-linux-gnu/
+COPY --from=builder /usr/lib/aarch64-linux-gnu/gstreamer-1.0 /usr/lib/aarch64-linux-gnu/gstreamer-1.0
+COPY --from=builder /usr/lib/aarch64-linux-gnu/girepository-1.0 /usr/lib/aarch64-linux-gnu/girepository-1.0
+
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libglib2.0-0 \
+    libffi8 \
+    libvpx7 \
+    libopus0 \
+    libx264-164 \
+    libpng16-16 \
+    libx11-6 \
+    libcairo2 \
+    python3 \
+    python3-pip \
+    python3-gi \
+    libpython3.11 \
+    libsrtp2-1 \
+    libcairo-gobject2 \
+    libgirepository-1.0-1 \
+    && rm -rf /var/lib/apt/lists/*
+
+# Définir le point d'entrée
+CMD ["bash"]

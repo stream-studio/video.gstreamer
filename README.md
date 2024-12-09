@@ -3,11 +3,11 @@
 
 run : 
 ```
-sudo docker run -ti ghcr.io/stream-studio/video.gstreamer:1.22.4 gst-launch-1.0 --version
+sudo docker run -ti ghcr.io/stream-studio/video.gstreamer:1.24 gst-launch-1.0 --version
 ```
 
 ```
-sudo docker run -ti ghcr.io/stream-studio/video.gstreamer:1.22.4 python3
+sudo docker run -ti ghcr.io/stream-studio/video.gstreamer:1.24 python3
 ```
 
 ```
