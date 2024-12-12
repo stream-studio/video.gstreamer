@@ -128,11 +128,11 @@ FROM debian:bookworm-slim as runtime
 ENV GSTREAMER_VERSION=1.24.10
 
 COPY --from=builder /usr/bin/gst* /usr/bin/
-COPY --from=builder /usr/lib/aarch64-linux-gnu/liborc-0.4.so /usr/lib/aarch64-linux-gnu/
-COPY --from=builder /usr/lib/aarch64-linux-gnu/libgst* /usr/lib/aarch64-linux-gnu/
-COPY --from=builder /usr/lib/aarch64-linux-gnu/libnice.so /usr/lib/aarch64-linux-gnu/
-COPY --from=builder /usr/lib/aarch64-linux-gnu/gstreamer-1.0 /usr/lib/aarch64-linux-gnu/gstreamer-1.0
-COPY --from=builder /usr/lib/aarch64-linux-gnu/girepository-1.0 /usr/lib/aarch64-linux-gnu/girepository-1.0
+COPY --from=builder /usr/lib/*-linux-gnu/liborc-0.4.so /usr/lib/
+COPY --from=builder /usr/lib/*-linux-gnu/libgst* /usr/lib/
+COPY --from=builder /usr/lib/*-linux-gnu/libnice.so /usr/lib/
+COPY --from=builder /usr/lib/*-linux-gnu/gstreamer-1.0 /usr/lib/gstreamer-1.0
+COPY --from=builder /usr/lib/*-linux-gnu/girepository-1.0 /usr/lib/girepository-1.0
 
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
