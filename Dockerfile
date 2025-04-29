@@ -9,13 +9,14 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     bison \
     build-essential \
     ca-certificates \
+    lldb \
+    gdb \
     flex \
     gettext \
     git \
     gnutls-dev `# libnice` \
     gtk-doc-tools `# libnice` \
     libffi-dev \
-    libglib2.0 \
     libopus-dev \
     libpcre3-dev \
     libsrtp2-dev \
